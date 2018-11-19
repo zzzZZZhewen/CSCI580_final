@@ -1,5 +1,7 @@
 #pragma once
-
+#ifndef APPLICATION_H
+#define APPLICATION_H
+#include "Shader.h"
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -9,33 +11,32 @@ class Application
 public:
 	Application();
 	~Application();	
-	int Run();
+	int run();
 private:
 	GLFWwindow *window;
-	int InitGL();
+	int initGL();
+	int prepareShaderProgram();
 	unsigned int VBOs[2], VAOs[2];
-	unsigned int shaderProgramOrange;
-	unsigned int shaderProgramYellow;
+	unsigned int shaderProgram;
 };
 
 
 static const char *vertexShaderSource = "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
+"layout (location = 1) in vec3 aColor;\n"
+"out vec3 vertexColor;\n"
 "void main()\n"
 "{\n"
 "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+"  vertexColor = aColor;"
 "}\0";
 static const char *fragmentShader1Source = "#version 330 core\n"
+"in vec3 vertexColor;\n"
 "out vec4 FragColor;\n"
+"uniform vec4 outColor;\n"
 "void main()\n"
 "{\n"
-"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-"}\n\0";
-static const char *fragmentShader2Source = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"   FragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);\n"
+"   FragColor = vec4(vertexColor, 1.0) * outColor.g;\n"
 "}\n\0";
 
 static const unsigned int SCR_WIDTH = 800;
@@ -63,3 +64,4 @@ static void processInput(GLFWwindow *window)
 		glfwSetWindowShouldClose(window, true);
 	}
 }
+#endif

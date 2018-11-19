@@ -5,7 +5,7 @@
 int main()
 {
 	Application app;
-	int status = app.Run();
+	int status = app.run();
 	return status;
 }
 
