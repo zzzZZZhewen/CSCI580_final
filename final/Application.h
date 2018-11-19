@@ -5,6 +5,10 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "Shader.h"
 #include "stb_image.h"
 class Application
@@ -19,6 +23,7 @@ private:
 	void loadTexture();
 	void testVertexBuffer();
 	unsigned int VBOs[2], VAOs[2], EBOs[2];
+	unsigned int texture1, texture2;
 	//unsigned int shaderProgram;
 };
 
