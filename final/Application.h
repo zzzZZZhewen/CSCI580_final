@@ -1,11 +1,12 @@
 #pragma once
 #ifndef APPLICATION_H
 #define APPLICATION_H
-#include "Shader.h"
+
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
+#include "Shader.h"
+#include "stb_image.h"
 class Application
 {
 public:
@@ -15,12 +16,13 @@ public:
 private:
 	GLFWwindow *window;
 	int initGL();
-	int prepareShaderProgram();
-	unsigned int VBOs[2], VAOs[2];
-	unsigned int shaderProgram;
+	void loadTexture();
+	void testVertexBuffer();
+	unsigned int VBOs[2], VAOs[2], EBOs[2];
+	//unsigned int shaderProgram;
 };
 
-
+/*
 static const char *vertexShaderSource = "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
 "layout (location = 1) in vec3 aColor;\n"
@@ -38,7 +40,7 @@ static const char *fragmentShader1Source = "#version 330 core\n"
 "{\n"
 "   FragColor = vec4(vertexColor, 1.0) * outColor.g;\n"
 "}\n\0";
-
+*/
 static const unsigned int SCR_WIDTH = 800;
 static const unsigned int SCR_HEIGHT = 600;
 
