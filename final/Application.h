@@ -8,7 +8,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
+#include "Camera.h"
 #include "Shader.h"
 #include "stb_image.h"
 class Application
@@ -19,12 +19,23 @@ public:
 	int run();
 private:
 	GLFWwindow *window;
+
+	float lastFrame = 0.0f;
+	float deltaTime = 0.0f;
+	float currentFrame = 0.0f;
+
 	int initGL();
 	void loadTexture();
 	void testVertexBuffer();
+	void render();
+
 	unsigned int VBOs[2], VAOs[2], EBOs[2];
 	unsigned int texture1, texture2;
+	Shader myShader;
+	Camera myCamera;
 	//unsigned int shaderProgram;
+
+	void processInput(GLFWwindow *window);
 };
 
 /*
@@ -62,13 +73,5 @@ static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	// height will be significantly larger than specified on retina displays.
 	glViewport(0, 0, width, height);
 }
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-// ---------------------------------------------------------------------------------------------------------
-static void processInput(GLFWwindow *window)
-{
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-	{
-		glfwSetWindowShouldClose(window, true);
-	}
-}
+
 #endif
