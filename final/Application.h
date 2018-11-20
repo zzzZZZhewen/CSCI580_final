@@ -11,6 +11,11 @@
 #include "Camera.h"
 #include "Shader.h"
 #include "stb_image.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include "Model.h"
+
 class Application
 {
 public:
@@ -28,11 +33,13 @@ private:
 	void loadTexture();
 	void testVertexBuffer();
 	void render();
+	void testModel();
 
 	unsigned int VBOs[2], VAOs[2], EBOs[2];
 	unsigned int texture1, texture2;
 	Shader myShader;
 	Camera myCamera;
+	Model myModel;
 	//unsigned int shaderProgram;
 
 	void processInput(GLFWwindow *window);
@@ -57,8 +64,8 @@ static const char *fragmentShader1Source = "#version 330 core\n"
 "   FragColor = vec4(vertexColor, 1.0) * outColor.g;\n"
 "}\n\0";
 */
-static const unsigned int SCR_WIDTH = 800;
-static const unsigned int SCR_HEIGHT = 600;
+static const unsigned int SCR_WIDTH = 1280;
+static const unsigned int SCR_HEIGHT = 720;
 
 static void error_callback(int error, const char* description)
 {

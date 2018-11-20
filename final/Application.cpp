@@ -3,10 +3,9 @@
 Application::Application()
 {
 	initGL();
-	loadTexture();
-	testVertexBuffer();
-	myShader = Shader("Shader/vertexShader.vs", "Shader/fragmentShader.fs");
-	myCamera = Camera();
+	//loadTexture();
+	//testVertexBuffer();
+	testModel();
 }
 
 void Application::loadTexture()
@@ -188,6 +187,9 @@ int Application::initGL()
 		return EXIT_FAILURE;
 	}
 
+	glEnable(GL_DEPTH_TEST);
+
+
 	return EXIT_SUCCESS;
 }
 
@@ -200,33 +202,26 @@ Application::~Application()
 	glDeleteBuffers(2, EBOs);
 }
 
+void Application::testModel()
+{
+	//myModel = Model("Assets/Model/Nanosuit/nanosuit.obj");
+	myModel = Model("Assets/Model/Box.obj");
+	myShader = Shader("Shader/vertexShader.ModelTest.vs", "Shader/fragmentShader.ModelTest.fs");
+	myCamera = Camera(glm::vec3(0.0f, 0.0f, 3.0f));
+}
+
 int Application::run()
 {
-	// runtime
-	// -----------
-	currentFrame = glfwGetTime();
-	deltaTime = currentFrame - lastFrame;
-	lastFrame = currentFrame;
-
-
-	// set texture
-	// -------------------
-
-	myShader.use(); // don't forget to activate/use the shader before setting uniforms!
-	// either set it manually like so:
-	glUniform1i(glGetUniformLocation(myShader.ID, "texture1"), 0);
-	// or set it via the Shader class
-	myShader.setInt("texture2", 1);
+	myShader.use();
 
 	// set matrix
 	// -----------------------------
 
 	glm::mat4 model;
-	glm::mat4 projection;
+	glm::mat4 projection = glm::perspective(glm::radians(myCamera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
-	model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	projection = glm::perspective(glm::radians(45.0f), float(SCR_WIDTH / SCR_HEIGHT), 0.1f, 100.0f);
-
+	model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
+	model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
 	// pass them to the shaders (3 different ways)
 	//glUniformMatrix4fv(glGetUniformLocation(myShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
 	//glUniformMatrix4fv(glGetUniformLocation(myShader.ID, "view"), 1, GL_FALSE, &view[0][0]);
@@ -234,15 +229,14 @@ int Application::run()
 	myShader.setMat4("model", model);
 	myShader.setMat4("view", myCamera.GetViewMatrix());
 
-
-	// switch
-	// -------------------
-
-	glEnable(GL_DEPTH_TEST);
-
-
 	while (!glfwWindowShouldClose(window))
 	{
+		// runtime
+		// -----------
+		currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
 		// input
 		// -----
 		processInput(window);
@@ -264,47 +258,14 @@ int Application::run()
 
 void Application::render()
 {
-	glm::vec3 cubePositions[] = {
-	  glm::vec3(0.0f,  0.0f,  0.0f),
-	  glm::vec3(2.0f,  5.0f, -15.0f),
-	  glm::vec3(-1.5f, -2.2f, -2.5f),
-	  glm::vec3(-3.8f, -2.0f, -12.3f),
-	  glm::vec3(2.4f, -0.4f, -3.5f),
-	  glm::vec3(-1.7f,  3.0f, -7.5f),
-	  glm::vec3(1.3f, -2.0f, -2.5f),
-	  glm::vec3(1.5f,  2.0f, -2.5f),
-	  glm::vec3(1.5f,  0.2f, -1.5f),
-	  glm::vec3(-1.3f,  1.0f, -1.5f)
-	};
-
-	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+	glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture1);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-
 	myShader.use();
 
-	float timeValue = glfwGetTime();
-	float greenValue = sin(timeValue) / 2.0f + 0.5f;
-	myShader.setFloat("outColor", greenValue);
-
-
-	glBindVertexArray(VAOs[0]);
-	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-	for (unsigned int i = 0; i < 10; i++)
-	{
-		glm::mat4 model;
-		model = glm::translate(model, cubePositions[i]);
-		float angle = 20.0f * i;
-		model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-		myShader.setMat4("model", model);
-
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-	}
+	myModel.Draw(myShader);
 }
+
+
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
@@ -329,6 +290,22 @@ void Application::processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
 		myCamera.Position += glm::normalize(glm::cross(myCamera.Front, myCamera.Up)) * myCamera.MovementSpeed * deltaTime;
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+	{
+		myCamera.ProcessMouseMovement(-2.5, 0);
+	}
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+	{
+		myCamera.ProcessMouseMovement(2.5, 0);
+	}
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	{
+		myCamera.ProcessMouseMovement(0, 2.5);
+	}
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	{
+		myCamera.ProcessMouseMovement(0, -2.5);
 	}
 }
 
