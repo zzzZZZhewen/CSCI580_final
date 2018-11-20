@@ -205,7 +205,7 @@ Application::~Application()
 void Application::testModel()
 {
 	//myModel = Model("Assets/Model/Nanosuit/nanosuit.obj");
-	myModel = Model("Assets/Model/Box.obj");
+	myModel = Model("Assets/Model/TestScene/test.obj");
 	myShader = Shader("Shader/vertexShader.ModelTest.vs", "Shader/fragmentShader.ModelTest.fs");
 	myCamera = Camera(glm::vec3(0.0f, 0.0f, 3.0f));
 }
@@ -221,7 +221,7 @@ int Application::run()
 	glm::mat4 projection = glm::perspective(glm::radians(myCamera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
 	model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
-	model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
+	model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
 	// pass them to the shaders (3 different ways)
 	//glUniformMatrix4fv(glGetUniformLocation(myShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
 	//glUniformMatrix4fv(glGetUniformLocation(myShader.ID, "view"), 1, GL_FALSE, &view[0][0]);
