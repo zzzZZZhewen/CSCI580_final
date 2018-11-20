@@ -87,6 +87,11 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
 		glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
 	}
 
+	void Shader::setVec3(const std::string &name, glm::vec3 value) const
+	{
+		glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, glm::value_ptr(value));
+	}
+
 	// utility function for checking shader compilation/linking errors.
 	// ------------------------------------------------------------------------
 	void Shader::checkCompileErrors(unsigned int shader, std::string type)
