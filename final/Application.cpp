@@ -66,7 +66,7 @@ void Application::testModel()
 {
 	//myModel = Model("Assets/Model/Nanosuit/nanosuit.obj");
 	
-	myModel = Model("Assets/Model/Walls/walls.obj");
+	myModel = Model("Assets/Model/Sky/sky.obj");
 	myShader = Shader("Shader/vertexShader.ModelTest.vs", "Shader/fragmentShader.ModelTest.fs");
 	myCamera = Camera(glm::vec3(0.0f, 0.0f, 6.0f));
 
