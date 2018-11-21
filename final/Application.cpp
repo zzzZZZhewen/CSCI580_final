@@ -66,21 +66,22 @@ void Application::testModel()
 {
 	//myModel = Model("Assets/Model/Nanosuit/nanosuit.obj");
 	
-	myModel = Model("Assets/Model/TestScene/test.obj");
+	myModel = Model("Assets/Model/Walls/walls.obj");
 	myShader = Shader("Shader/vertexShader.ModelTest.vs", "Shader/fragmentShader.ModelTest.fs");
 	myCamera = Camera(glm::vec3(0.0f, 0.0f, 6.0f));
 
 	projectionMat4 = glm::perspective(glm::radians(myCamera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-	modelMat4 = glm::translate(modelMat4, glm::vec3(0.0f, -1.75f, 0.0f));
-	modelMat4 = glm::scale(modelMat4, glm::vec3(5.0f, 5.0f, 5.0f));
+	modelMat4 = glm::translate(modelMat4, glm::vec3(0.0f, -0.0f, 0.0f));
+	modelMat4 = glm::scale(modelMat4, glm::vec3(1.0f, 1.0f, 1.0f));
 
 
 	myLight = Light("Assets/Model/Light/sun.obj");
 	myLight.color = glm::vec3(1.0f, 1.0f, 1.0f);
 	myLight.color = glm::normalize(myLight.color);
 	myLight.intensity = 20.0f;
-	myLight.position = glm::vec3(12.5f, 12.5f, 0.0f);
+	myLight.position = glm::vec3(0.0f, 0.0f, 0.0f);
 	lightModelMat4 = glm::translate(lightModelMat4, myLight.position);
+	lightModelMat4 = glm::scale(lightModelMat4, glm::vec3(0.2f, 0.2f, 0.2f));
 	lightShader = Shader("Shader/vertexShader.Light.vs", "Shader/fragmentShader.Light.fs");
 
 	ambientLight.color = glm::vec3(1.0f, 1.0f, 1.0f);
