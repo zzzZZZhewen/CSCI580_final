@@ -46,7 +46,7 @@ int Application::initGL()
 	}
 
 	glEnable(GL_DEPTH_TEST);
-
+	//glEnable(GL_STENCIL_TEST);
 
 	return EXIT_SUCCESS;
 }
@@ -68,7 +68,7 @@ void Application::testModel()
 	
 	myModel = Model("Assets/Model/Walls/walls.obj");
 	myShader = Shader("Shader/vertexShader.ModelTest.vs", "Shader/fragmentShader.ModelTest.fs");
-	myCamera = Camera(glm::vec3(0.0f, 0.0f, 6.0f));
+	myCamera = Camera(glm::vec3(0.0f, 0.0f, 15.0f));
 
 	projectionMat4 = glm::perspective(glm::radians(myCamera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 	modelMat4 = glm::translate(modelMat4, glm::vec3(0.0f, -0.0f, 0.0f));
@@ -146,6 +146,7 @@ void Application::render()
 {
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	myShader.use();
 	// set matrix
