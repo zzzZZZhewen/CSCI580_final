@@ -72,14 +72,14 @@ void Application::testModel()
 
 	projectionMat4 = glm::perspective(glm::radians(myCamera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 	modelMat4 = glm::translate(modelMat4, glm::vec3(0.0f, -1.75f, 0.0f));
-	modelMat4 = glm::scale(modelMat4, glm::vec3(2.0f, 2.0f, 2.0f));
+	modelMat4 = glm::scale(modelMat4, glm::vec3(5.0f, 5.0f, 5.0f));
 
 
 	myLight = Light("Assets/Model/Light/sun.obj");
 	myLight.color = glm::vec3(1.0f, 1.0f, 1.0f);
 	myLight.color = glm::normalize(myLight.color);
-	myLight.intensity = 2.0f;
-	myLight.position = glm::vec3(25.0f, 25.0f, 0.0f);
+	myLight.intensity = 20.0f;
+	myLight.position = glm::vec3(12.5f, 12.5f, 0.0f);
 	lightModelMat4 = glm::translate(lightModelMat4, myLight.position);
 	lightShader = Shader("Shader/vertexShader.Light.vs", "Shader/fragmentShader.Light.fs");
 
@@ -93,11 +93,14 @@ void Application::testModel()
 	myShader.setVec3("light.specular", myLight.color * myLight.intensity);
 	myShader.setVec3("light.position", myLight.position);
 
-	// material properties
 	myShader.setVec3("material.ambient", 1.0f, 1.0f, 1.0f);
 	myShader.setVec3("material.diffuse", 1.0f, 1.0f, 1.0f);
 	myShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f); // specular lighting doesn't have full effect on this object's material
 	myShader.setFloat("material.shininess", 64.0f);
+
+	myShader.setFloat("light.constant", 1.0f);
+	myShader.setFloat("light.linear", 0.09f);
+	myShader.setFloat("light.quadratic", 0.032f);
 
 	myShader.setVec3("viewPos", myCamera.Position);
 
