@@ -65,13 +65,13 @@ void Application::makeQuad()
 {
 	float quadVertices[] = {
 		// positions   // texCoords
-		0.0f,  0.0f,  0.0f, 1.0f,
-		0.0f, -1.0f,  0.0f, 0.0f,
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		-1.0f, -1.0f,  0.0f, 0.0f,
 		 1.0f, -1.0f,  1.0f, 0.0f,
 
-		0.0f,  0.0f,  0.0f, 1.0f,
+		-1.0f,  1.0f,  0.0f, 1.0f,
 		 1.0f, -1.0f,  1.0f, 0.0f,
-		 1.0f,  0.0f,  1.0f, 1.0f
+		 1.0f,  1.0f,  1.0f, 1.0f
 	};
 
 	
@@ -87,7 +87,16 @@ void Application::makeQuad()
 
 	quadShader = Shader("Shader/vertexShader.Quad.vs", "Shader/fragmentShader.Quad.fs");
 	quadShader.use();
-	quadShader.setInt("screenTexutre", 0);
+	quadShader.setInt("screenTexture", 0);
+	quadShader.setInt("effectTexture", 1);
+
+	greyShader = Shader("Shader/vertexShader.Quad.vs", "Shader/fragmentShader.Grey.fs");
+	greyShader.use();
+	greyShader.setInt("screenTexture", 0);
+
+	blurShader = Shader("Shader/vertexShader.Quad.vs", "Shader/fragmentShader.Blur.fs");
+	blurShader.use();
+	blurShader.setInt("screenTexture", 0);
 
 	// framebuffer configuration
 	// -------------------------
@@ -112,6 +121,44 @@ void Application::makeQuad()
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	glGenFramebuffers(1, &framebuffer1);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer1);
+	// create a color attachment texture
+	glGenTextures(1, &textureColorbuffer1);
+	glBindTexture(GL_TEXTURE_2D, textureColorbuffer1);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer1, 0);
+
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT); // use a single renderbuffer object for both a depth AND stencil buffer.
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo); // now actually attach it
+	// now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	glGenFramebuffers(1, &framebuffer2);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer2);
+	// create a color attachment texture
+	glGenTextures(1, &textureColorbuffer2);
+	glBindTexture(GL_TEXTURE_2D, textureColorbuffer2);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer2, 0);
+
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT); // use a single renderbuffer object for both a depth AND stencil buffer.
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo); // now actually attach it
+	// now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Application::testModel()
@@ -126,13 +173,13 @@ void Application::testModel()
 	modelMat4 = glm::translate(modelMat4, glm::vec3(0.0f, -0.0f, 0.0f));
 	modelMat4 = glm::scale(modelMat4, glm::vec3(1.0f, 1.0f, 1.0f));
 
-	/*glm::vec4 avec(0.0, 0.0, -1.0, 1.0);
+	glm::vec4 avec(0.0, 0.0, -1.0, 1.0);
 	avec = glm::inverse(myCamera.GetViewMatrix()) * glm::inverse(projectionMat4) * avec;
 	std::cout << avec.x / avec.w << "," << avec.y / avec.w << "," << avec.z / avec.w << std::endl;
 
 	glm::vec4 bvec(0.0, 0.0, 13.9f, 1.0);
 	bvec = projectionMat4 * myCamera.GetViewMatrix() * bvec;
-	std::cout << bvec.x / bvec.w << "," << bvec.y / bvec.w << "," << bvec.z / bvec.w;*/
+	std::cout << bvec.x / bvec.w << "," << bvec.y / bvec.w << "," << bvec.z / bvec.w << std::endl;
 
 	myLight = Light("Assets/Model/Light/sun.obj");
 	myLight.color = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -190,24 +237,75 @@ int Application::run()
 		// -----
 		processInput(window);
 
-		glEnable(GL_DEPTH_TEST);
-
-		render();
-
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 		glEnable(GL_DEPTH_TEST);
 		// render
 		// ------
 		render();
 
-		// now bind back to default framebuffer and draw a quad plane with the attached framebuffer color texture
+		glm::vec4 lightvec(myLight.position, 1.0);
+		lightvec = projectionMat4 * myCamera.GetViewMatrix() * lightvec;
+		//quadShader.setVec3("lightPosNDC", glm::vec3(lightvec.x / lightvec.w, lightvec.y / lightvec.w, lightvec.z / lightvec.w));
+
+		//grey
+		// -------------------------
+
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer1);
+		glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
+		// clear all relevant buffers
+		greyShader.use();
+		//greyShader.setVec3("lightPosNDC", glm::vec3(lightvec.x / lightvec.w, lightvec.y / lightvec.w, lightvec.z / lightvec.w));
+
+		glBindVertexArray(quadVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		// blur 
+		// ---------------
+
+		int blurIteration = 1;
+		for (int i = 0; i < blurIteration; i++)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer2);
+			glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
+			// clear all relevant buffers
+			blurShader.use();
+			blurShader.setVec3("lightPosNDC", glm::vec3(lightvec.x / lightvec.w, lightvec.y / lightvec.w, lightvec.z / lightvec.w));
+
+			glBindVertexArray(quadVAO);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, textureColorbuffer1);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
+			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer1);
+			glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
+			// clear all relevant buffers
+			blurShader.use();
+			blurShader.setVec3("lightPosNDC", glm::vec3(lightvec.x / lightvec.w, lightvec.y / lightvec.w, lightvec.z / lightvec.w));
+
+
+			glBindVertexArray(quadVAO);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, textureColorbuffer2);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
+
+
+		// blend
+		// ----------------
+		
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
 		// clear all relevant buffers
 		quadShader.use();
+		
 		glBindVertexArray(quadVAO);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, textureColorbuffer1);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		glfwSwapBuffers(window);
