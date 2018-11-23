@@ -10,7 +10,6 @@ uniform float blurOffset;
 
 void main()
 {
-    float samplerScale = 0.05;
     int RADIAL_SAMPLE_COUNT = 6;
     vec3 col = texture(screenTexture, TexCoords.xy).rgb;
     vec2 offsetBlurDir =  (vec2(lightPosNDC.x, lightPosNDC.y) - ndcPos) * blurOffset;
@@ -20,7 +19,7 @@ void main()
 
     for (int i = 0; i < RADIAL_SAMPLE_COUNT; i ++)
     {
-        col = col + texture(screenTexture, TexCoords.xy + offsetBlurDir * i * samplerScale).rgb;
+        col = col + texture(screenTexture, TexCoords.xy + offsetBlurDir * i).rgb;
     }
     col = col / RADIAL_SAMPLE_COUNT;
     

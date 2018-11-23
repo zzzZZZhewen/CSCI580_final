@@ -254,6 +254,7 @@ int Application::run()
 		glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
 		// clear all relevant buffers
 		greyShader.use();
+		greyShader.setFloat("greyThreashold", 0.4f);
 		//greyShader.setVec3("lightPosNDC", glm::vec3(lightvec.x / lightvec.w, lightvec.y / lightvec.w, lightvec.z / lightvec.w));
 
 		glBindVertexArray(quadVAO);
@@ -265,7 +266,7 @@ int Application::run()
 		// ---------------
 
 		int blurIteration = 2;
-		float sampleScale = 700.0f;
+		float sampleScale = 20.0;
 		float samplerOffset = sampleScale / SCR_WIDTH;
 		for (int i = 0; i < blurIteration; i++)
 		{
