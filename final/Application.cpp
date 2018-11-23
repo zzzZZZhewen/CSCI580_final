@@ -185,7 +185,7 @@ void Application::testModel()
 	myLight.color = glm::vec3(1.0f, 1.0f, 1.0f);
 	myLight.color = glm::normalize(myLight.color);
 	myLight.intensity = 20.0f;
-	myLight.position = glm::vec3(0.0f, 0.0f, 0.0f);
+	myLight.position = glm::vec3(0.0f, 3.0f, 0.0f);
 	lightModelMat4 = glm::translate(lightModelMat4, myLight.position);
 	lightModelMat4 = glm::scale(lightModelMat4, glm::vec3(0.2f, 0.2f, 0.2f));
 	lightShader = Shader("Shader/vertexShader.Light.vs", "Shader/fragmentShader.Light.fs");
@@ -214,8 +214,6 @@ void Application::testModel()
 	myShader.setMat4("projection", projectionMat4);
 	myShader.setMat4("model", modelMat4);
 
-
-
 	lightShader.use();
 	lightShader.setMat4("projection", projectionMat4);
 	lightShader.setMat4("model", lightModelMat4);
@@ -243,9 +241,25 @@ int Application::run()
 		// ------
 		render();
 
+
 		glm::vec4 lightvec(myLight.position, 1.0);
 		lightvec = projectionMat4 * myCamera.GetViewMatrix() * lightvec;
 		//quadShader.setVec3("lightPosNDC", glm::vec3(lightvec.x / lightvec.w, lightvec.y / lightvec.w, lightvec.z / lightvec.w));
+
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
+		// clear all relevant buffers
+		quadShader.use();
+		quadShader.setFloat("moveX", -0.5f);
+		quadShader.setFloat("moveY", 0.5f);
+
+		glBindVertexArray(quadVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		//grey
 		// -------------------------
@@ -260,6 +274,22 @@ int Application::run()
 		glBindVertexArray(quadVAO);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
+		// clear all relevant buffers
+		quadShader.use();
+		quadShader.setFloat("moveX", 0.5f);
+		quadShader.setFloat("moveY", 0.5f);
+
+		glBindVertexArray(quadVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureColorbuffer1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, 0);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		// blur 
@@ -295,8 +325,6 @@ int Application::run()
 			glBindTexture(GL_TEXTURE_2D, textureColorbuffer2);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 		}
-
-
 		// blend
 		// ----------------
 		
@@ -304,7 +332,22 @@ int Application::run()
 		glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
 		// clear all relevant buffers
 		quadShader.use();
-		
+		quadShader.setFloat("moveX", -0.5f);
+		quadShader.setFloat("moveY", -0.5f);
+
+		glBindVertexArray(quadVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureColorbuffer1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
+		// clear all relevant buffers
+		quadShader.use();
+		quadShader.setFloat("moveX", 0.5f);
+		quadShader.setFloat("moveY", -0.5f);
 		glBindVertexArray(quadVAO);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
