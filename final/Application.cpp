@@ -4,6 +4,7 @@ Application::Application()
 {
 	initGL();
 	makeQuad();
+	makeShadow();
 	testModel();
 
 	// new Scene
@@ -59,6 +60,31 @@ Application::~Application()
 	/*glDeleteVertexArrays(2, VAOs);
 	glDeleteBuffers(2, VBOs);
 	glDeleteBuffers(2, EBOs);*/
+}
+
+void Application::makeShadow()
+{
+	// Configure depth map FBO
+	simpleDepthShader  = Shader("Shader/vertexShader.SimpleDepth.vs", "Shader/fragmentShader.SimpleDepth.fs", "Shader/gShader.SimpleDepth.gs");
+	
+	glGenFramebuffers(1, &depthMapFBO);
+	glGenTextures(1, &depthCubemap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+	for (GLuint i = 0; i < 6; ++i)
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	// Attach cubemap as depth map FBO's color buffer
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete!" << std::endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Application::makeQuad()
@@ -166,7 +192,7 @@ void Application::testModel()
 	//myModel = Model("Assets/Model/Nanosuit/nanosuit.obj");
 	
 	myModel = Model("Assets/Model/Walls/walls.obj");
-	myShader = Shader("Shader/vertexShader.ModelTest.vs", "Shader/fragmentShader.ModelTest.fs");
+	myShader = Shader("Shader/vertexShader.ModelShadow.vs", "Shader/fragmentShader.ModelShadow.fs");
 	myCamera = Camera(glm::vec3(0.0f, 0.0f, 14.0f));
 
 	projectionMat4 = glm::perspective(glm::radians(myCamera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -195,25 +221,21 @@ void Application::testModel()
 
 	myShader.use();
 
-	myShader.setVec3("light.ambient", ambientLight.color * ambientLight.intensity);
-	myShader.setVec3("light.diffuse", myLight.color * myLight.intensity);
-	myShader.setVec3("light.specular", myLight.color * myLight.intensity);
-	myShader.setVec3("light.position", myLight.position);
+	glUniform1i(glGetUniformLocation(myShader.ID, "depthMap"), 1);
 
-	myShader.setVec3("material.ambient", 1.0f, 1.0f, 1.0f);
-	myShader.setVec3("material.diffuse", 1.0f, 1.0f, 1.0f);
-	myShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f); // specular lighting doesn't have full effect on this object's material
-	myShader.setFloat("material.shininess", 64.0f);
+	
 
-	myShader.setFloat("light.constant", 1.0f);
-	myShader.setFloat("light.linear", 0.09f);
-	myShader.setFloat("light.quadratic", 0.032f);
 
+	//myShader.setFloat("light.constant", 1.0f);
+	//myShader.setFloat("light.linear", 0.09f);
+	//myShader.setFloat("light.quadratic", 0.032f);
+	myShader.setVec3("lightPos", myLight.position);
 	myShader.setVec3("viewPos", myCamera.Position);
 
 	myShader.setMat4("projection", projectionMat4);
 	myShader.setMat4("model", modelMat4);
-
+	myShader.setBool("shadows", true);
+	myShader.setFloat("far_plane", 25.0f);
 
 
 	lightShader.use();
@@ -328,11 +350,40 @@ void Application::render()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+
+	// 0. Create depth cubemap transformation matrices
+	GLfloat aspect = (GLfloat)SHADOW_WIDTH / (GLfloat)SHADOW_HEIGHT;
+	GLfloat _near = 1.0f;
+	GLfloat _far = 25.0f;
+	glm::mat4 shadowProj = glm::perspective(90.0f, aspect, _near, _far);
+	std::vector<glm::mat4> shadowTransforms;
+	shadowTransforms.push_back(shadowProj * glm::lookAt(myLight.position, myLight.position + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(myLight.position, myLight.position + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(myLight.position, myLight.position + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(myLight.position, myLight.position + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(myLight.position, myLight.position + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(myLight.position, myLight.position + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
+
+	// 1. Render scene to depth cubemap
+	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	simpleDepthShader.use();
+	for (GLuint i = 0; i < 6; ++i)
+		glUniformMatrix4fv(glGetUniformLocation(simpleDepthShader.ID, ("shadowMatrices[" + std::to_string(i) + "]").c_str()), 1, GL_FALSE, glm::value_ptr(shadowTransforms[i]));
+	glUniform1f(glGetUniformLocation(simpleDepthShader.ID, "far_plane"), _far);
+	glUniform3fv(glGetUniformLocation(simpleDepthShader.ID, "lightPos"), 1, glm::value_ptr(myLight.position));
+	myModel.Draw(simpleDepthShader);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+
 	myShader.use();
 	// set matrix
 	// -----------------------------
 	myShader.setMat4("view", myCamera.GetViewMatrix());
 	myShader.setVec3("viewPos", myCamera.Position);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 	myModel.Draw(myShader);
 
 	lightShader.use();

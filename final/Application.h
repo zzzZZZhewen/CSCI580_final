@@ -35,6 +35,7 @@ private:
 	int initGL();
 	void render();
 	void testModel();
+	void makeShadow();
 
 
 	glm::mat4 projectionMat4;
@@ -45,6 +46,7 @@ private:
 
 	Camera myCamera;
 
+	// light
 	Shader lightShader;
 	Light myLight;
 	glm::mat4 lightModelMat4;
@@ -66,6 +68,12 @@ private:
 	unsigned int framebuffer2;
 
 	void processInput(GLFWwindow *window);
+
+	// shadow
+	const GLuint SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+	GLuint depthMapFBO;
+	GLuint depthCubemap;
+	Shader simpleDepthShader;
 };
 
 static const unsigned int SCR_WIDTH = 1920;
