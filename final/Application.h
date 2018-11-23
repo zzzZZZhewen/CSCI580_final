@@ -51,7 +51,19 @@ private:
 
 	Light ambientLight;
 	
-	//unsigned int shaderProgram;
+	void makeQuad();
+	unsigned int quadVAO, quadVBO;
+	Shader quadShader;
+	Shader greyShader;
+	Shader blurShader;
+	unsigned int textureColorbuffer;
+	unsigned int framebuffer;
+
+	unsigned int textureColorbuffer1;
+	unsigned int framebuffer1;
+
+	unsigned int textureColorbuffer2;
+	unsigned int framebuffer2;
 
 	void processInput(GLFWwindow *window);
 };
