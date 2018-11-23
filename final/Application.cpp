@@ -264,7 +264,9 @@ int Application::run()
 		// blur 
 		// ---------------
 
-		int blurIteration = 1;
+		int blurIteration = 2;
+		float sampleScale = 700.0f;
+		float samplerOffset = sampleScale / SCR_WIDTH;
 		for (int i = 0; i < blurIteration; i++)
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer2);
@@ -272,6 +274,7 @@ int Application::run()
 			// clear all relevant buffers
 			blurShader.use();
 			blurShader.setVec3("lightPosNDC", glm::vec3(lightvec.x / lightvec.w, lightvec.y / lightvec.w, lightvec.z / lightvec.w));
+			blurShader.setFloat("blurOffset", samplerOffset * (i * 2 + 1));
 
 			glBindVertexArray(quadVAO);
 			glActiveTexture(GL_TEXTURE0);
@@ -284,7 +287,7 @@ int Application::run()
 			// clear all relevant buffers
 			blurShader.use();
 			blurShader.setVec3("lightPosNDC", glm::vec3(lightvec.x / lightvec.w, lightvec.y / lightvec.w, lightvec.z / lightvec.w));
-
+			blurShader.setFloat("blurOffset", samplerOffset * (i * 2 + 2));
 
 			glBindVertexArray(quadVAO);
 			glActiveTexture(GL_TEXTURE0);
