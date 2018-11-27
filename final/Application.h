@@ -56,6 +56,7 @@ private:
 	Shader quadShader;
 	Shader greyShader;
 	Shader blurShader;
+	Shader rayShader;
 	unsigned int textureColorbuffer;
 	unsigned int framebuffer;
 
